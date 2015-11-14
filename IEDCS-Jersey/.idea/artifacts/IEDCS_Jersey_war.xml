@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="IEDCS-Jersey:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="iedcs-api.war">
+      <element id="artifact" artifact-name="IEDCS-Jersey:war exploded" />
+    </root>
+  </artifact>
+</component>

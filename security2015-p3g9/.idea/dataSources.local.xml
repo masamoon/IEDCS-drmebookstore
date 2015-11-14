@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="dataSourceStorageLocal">
+    <data-source name="IEDCS - @localhost" uuid="2ce64a44-3ed5-4a5f-bdce-1e5855aa2961">
+      <secret-storage>master_key</secret-storage>
+      <user-name>root</user-name>
+      <schema-pattern>userdb.*</schema-pattern>
+      <default-schemas>userdb.*</default-schemas>
+    </data-source>
+  </component>
+</project>
