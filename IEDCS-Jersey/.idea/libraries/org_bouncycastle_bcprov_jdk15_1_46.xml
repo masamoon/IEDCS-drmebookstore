@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="org.bouncycastle:bcprov-jdk15:1.46" type="repository">
+    <properties maven-id="org.bouncycastle:bcprov-jdk15:1.46" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/bouncycastle/bcprov-jdk15/1.46/bcprov-jdk15-1.46.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

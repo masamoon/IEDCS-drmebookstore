@@ -49,9 +49,11 @@ public class X509certificates {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
         KeyPair pair = generateRSAKeyPair();
+
         X509Certificate cert = generateV3Certificate(pair);
         cert.checkValidity(new Date());
         cert.verify(cert.getPublicKey());
+
     }
     public static KeyPair generateRSAKeyPair() throws Exception {
         KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA", "BC");

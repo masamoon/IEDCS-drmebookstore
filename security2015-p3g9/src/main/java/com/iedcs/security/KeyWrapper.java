@@ -24,7 +24,7 @@ public class KeyWrapper {
 
 
 
-        //cipher file with file_key
+       /* //cipher file with file_key
         CipherEbook.cipher_file_1key("C:\\Users\\Andre\\Documents\\ebooks\\meinkampf.epub", file_key);
         //cipher file_key with device key, player key and user key
         byte[] wrap_key = wrapKey_3(device_key,user_key,player_key,file_key);
@@ -40,7 +40,20 @@ public class KeyWrapper {
         //open deciphered file with GUI
         File f = new File("C:\\Users\\Andre\\Documents\\ebooks\\meinkampf.epub.aes.dec");
         FileInputStream fin = new FileInputStream(f);
-        GUI.view(fin);
+        GUI.view(fin);*/
+
+
+        byte[] wrap_key = wrapKey_3(device_key,user_key,player_key,file_key);
+       // SecretKey file_key_unwrapped = unwrapKey_3(device_key,user_key,player_key,wrap_key);
+       SecretKey k1 =  unwrap_playerKey(wrap_key);
+        SecretKey k2 = unwrap_userKey(k1.getEncoded());
+        SecretKey k3 = unwrap_deviceKey(k2.getEncoded());
+
+        System.out.println(new String(file_key.getEncoded()));
+        System.out.println(new String(wrap_key));
+        System.out.println(new String(k1.getEncoded()));
+        System.out.println(new String(k2.getEncoded()));
+        System.out.println(new String(k3.getEncoded()));
 
 
 
@@ -108,5 +121,41 @@ public class KeyWrapper {
 
         return key;
 
+    }
+
+    public static SecretKey unwrap_userKey(byte[] wrappedKey) throws  Exception{
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+
+        // unwrap the wrapped key
+        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding", "BC");
+        SecretKey user_key = UserKeyFactory.getKey();
+        cipher.init(Cipher.DECRYPT_MODE, user_key );
+        SecretKey key = new SecretKeySpec(cipher.doFinal(wrappedKey), "AES");
+        //  System.out.println("unwrapped: " + new String(key.getEncoded()));
+        return key;
+    }
+
+    public static SecretKey unwrap_playerKey(byte[] wrappedKey) throws  Exception{
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+
+        // unwrap the wrapped key
+        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding", "BC");
+        SecretKey player_key = PlayerKeyFactory.getKey();
+        cipher.init(Cipher.DECRYPT_MODE, player_key );
+        SecretKey key = new SecretKeySpec(cipher.doFinal(wrappedKey), "AES");
+        //  System.out.println("unwrapped: " + new String(key.getEncoded()));
+        return key;
+    }
+
+    public static SecretKey unwrap_deviceKey(byte[] wrappedKey) throws  Exception{
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+
+        // unwrap the wrapped key
+        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding", "BC");
+        SecretKey device_key = DeviceKeyFactory.getDeviceKey();
+        cipher.init(Cipher.DECRYPT_MODE, device_key );
+        SecretKey key = new SecretKeySpec(cipher.doFinal(wrappedKey), "AES");
+        //  System.out.println("unwrapped: " + new String(key.getEncoded()));
+        return key;
     }
 }

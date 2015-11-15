@@ -12,7 +12,9 @@
       <configuration>
         <setting name="validation-enabled" value="true" />
         <setting name="provider-name" value="" />
-        <datasource-mapping />
+        <datasource-mapping>
+          <factory-entry name="NewPersistenceUnit" value="11862d42-d0dc-42ca-946c-e8a395ca4873" />
+        </datasource-mapping>
         <deploymentDescriptor name="persistence.xml" url="file://$MODULE_DIR$/src/main/resources/META-INF/persistence.xml" />
       </configuration>
     </facet>
@@ -37,9 +39,7 @@
     <orderEntry type="library" name="Maven: org.springframework:spring-expression:4.2.0.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-web:4.2.0.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-webmvc:4.2.0.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: bouncycastle:bcprov-jdk15:140" level="project" />
     <orderEntry type="library" name="Maven: org.bouncycastle:bcpkix-jdk14:1.48" level="project" />
-    <orderEntry type="library" name="Maven: org.bouncycastle:bcprov-jdk14:1.48" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.security:spring-security-core:3.0.7.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-tx:3.0.6.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.aspectj:aspectjrt:1.6.8" level="project" />
@@ -49,10 +49,15 @@
     <orderEntry type="library" name="Maven: org.epublib.tools:epublib.tools:1.0" level="project" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:com.springsource.org.apache.commons.lang:2.6.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.directory.studio:org.slf4j.log4j12:1.7.2" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-log4j12:1.7.2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.directory.studio:org.slf4j.api:1.7.2" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax:javaee-web-api:7.0" level="project" />
+    <orderEntry type="library" name="asg.cliche-110413" level="project" />
+    <orderEntry type="library" name="org.hibernate:hibernate-entitymanager:5.0.3.Final" level="project" />
+    <orderEntry type="library" name="mysql:mysql-connector-java:5.1.37" level="project" />
+    <orderEntry type="library" name="org.slf4j:slf4j-log4j12:1.7.2" level="project" />
+    <orderEntry type="library" name="org.slf4j:slf4j-api:1.7.2" level="project" />
+    <orderEntry type="library" name="org.apache.directory.studio:org.bouncycastle.bcprov.jdk15:140" level="project" />
+    <orderEntry type="library" name="org.bouncycastle:bcprov-jdk15:1.46" level="project" />
   </component>
 </module>

@@ -67,7 +67,45 @@ public class MakeHeader {
         return s;
     }
 
-    public static void make(File file, byte[] header, File output_file ) throws Exception{
+    public static byte[] readHeader_bytes(File file){
+
+        FileInputStream fin = null;
+        String s = "";
+        byte[] fileContent = null;
+        try {
+            // create FileInputStream object
+            fin = new FileInputStream(file);
+
+            fileContent = new byte[32];
+
+            // Reads up to certain bytes of data from this input stream into an array of bytes.
+            fin.read(fileContent);
+            //create string from byte array
+            s = new String(fileContent);
+            //System.out.println("File content: " + s);
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("File not found" + e);
+        }
+        catch (IOException ioe) {
+            System.out.println("Exception while reading file " + ioe);
+        }
+        finally {
+            // close the streams using close method
+            try {
+                if (fin != null) {
+                    fin.close();
+                }
+            }
+            catch (IOException ioe) {
+                System.out.println("Error while closing stream: " + ioe);
+            }
+        }
+
+        return fileContent;
+    }
+
+    public static void make(File file, byte[] header, File output_file ) throws Exception{ //puts cyrptoheader on file
 
             FileInputStream fin = new FileInputStream(file);
             byte[] buffer = new byte[4096];
@@ -82,7 +120,7 @@ public class MakeHeader {
 
     }
 
-    public static byte[] removeHeader(File file, File output_file)throws Exception{
+    public static byte[] removeHeader(File file, File output_file)throws Exception{ //removes cryptoheader from file
 
 
         FileInputStream fin = new FileInputStream(file);
@@ -92,8 +130,8 @@ public class MakeHeader {
         FileOutputStream fo = new FileOutputStream(output_file);
         //fo.write(header);
         fin.read(header,0,32);
-        System.out.println("HEADER");
-        System.out.println(new String(header));
+       // System.out.println("HEADER");
+        //System.out.println(new String(header));
        // fin.skip(32);
         while((read = fin.read(buffer))!=-1){
             fo.write(buffer,0,read);

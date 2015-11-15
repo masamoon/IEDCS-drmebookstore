@@ -34,12 +34,12 @@ public class EncryptionUtil {
     /**
      * String to hold the name of the private key file.
      */
-    public static final String PRIVATE_KEY_FILE = "C:/Users/Andre/Documents/keys/private.key";
+    public static final String PRIVATE_KEY_FILE = "keys/private.key";
 
     /**
      * String to hold name of the public key file.
      */
-    public static final String PUBLIC_KEY_FILE = "C:/Users/Andre/Documents/keys/public.key";
+    public static final String PUBLIC_KEY_FILE = "keys/public.key";
 
     /**
      * Generate key which contains a pair of private and public key using 1024

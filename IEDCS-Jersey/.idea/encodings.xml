@@ -1,6 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/src/main/java/com/iedcs/persistence/CatalogEntity.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/iedcs/persistence/PlayerKeyManager.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/iedcs/persistence/PlayerkeytableEntity.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/iedcs/persistence/UsercredEntity.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/persistence/CatalogEntity.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/persistence/Main.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/persistence/PlayerKeyManager.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/persistence/PlayerkeytableEntity.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/persistence/UsercredEntity.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/player/GUI.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/player/IEDCS_Player.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/AES.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/AESEncryptor.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/Ciph.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/CipherEbook.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/CipherEbookTest.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/DeviceKeyFactory.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/DiskUtils.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/Ebook.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/EncryptionUtil.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/FileKeyFactory.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/KeyWrapper.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/Mac.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/MakeHeader.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/PlayerKeyFactory.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/SQLqueries.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/Salt.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/User.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/UserKeyFactory.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/WorkingDirectories.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/security/X509certificates.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/iedcs/web/HTTPMethods.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/META-INF/persistence.xml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/../IntelliJprojects/Securityp5g9/security2015-p3g9" charset="UTF-8" />
   </component>
 </project>

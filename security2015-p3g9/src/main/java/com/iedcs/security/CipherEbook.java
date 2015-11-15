@@ -82,10 +82,10 @@ public class CipherEbook {
     }
 
     public static void cipher_file_1key(String directory, SecretKey file_key)throws Exception{
-
+        System.out.println("ENCRYPTING 1 KEY");
         AESEncryptor encryptor = new AESEncryptor();
         encryptor.encrypt(directory,file_key);
-
+        System.out.println("ENCRYPTION 1 KEY DONE");
     }
 
     public static void decipher_file_1key(String directory,SecretKey file_key)throws Exception{
