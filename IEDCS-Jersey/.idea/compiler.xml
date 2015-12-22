@@ -31,8 +31,16 @@
         <processorPath useClasspath="true" />
         <module name="Security" />
       </profile>
+      <profile default="false" name="Annotation profile for encfs-java" enabled="true">
+        <sourceOutputDir name="target\generated-sources\annotations" />
+        <sourceTestOutputDir name="target\generated-test-sources\test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="encfs-java" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="encfs-java" target="1.6" />
       <module name="IEDCS-Jersey" target="1.5" />
       <module name="Security" target="1.7" />
     </bytecodeTargetLevel>

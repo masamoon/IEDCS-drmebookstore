@@ -6,6 +6,7 @@
         <element id="directory" name="classes">
           <element id="module-output" name="IEDCS-Jersey" />
           <element id="module-output" name="Security" />
+          <element id="module-output" name="encfs-java" />
         </element>
         <element id="directory" name="lib">
           <element id="library" level="project" name="Maven: org.glassfish.jersey.containers:jersey-container-servlet:2.10.1" />
@@ -31,6 +32,9 @@
           <element id="library" level="project" name="org.slf4j:slf4j-api:1.7.2" />
           <element id="library" level="project" name="org.apache.directory.studio:org.bouncycastle.bcprov.jdk15:140" />
           <element id="library" level="project" name="org.bouncycastle:bcprov-jdk15:1.46" />
+          <element id="library" level="project" name="pteidlibj" />
+          <element id="library" level="project" name="com.google.code.gson:gson:2.2" />
+          <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.6.4" />
         </element>
       </element>
       <element id="directory" name="META-INF">

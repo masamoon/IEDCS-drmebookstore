@@ -55,6 +55,14 @@ public class IEDCS_Player {
 
     }
 
+    public String getLogin(){
+        return this.logged_user;
+    }
+
+    public void setLogin(String user){
+        this.logged_user = user;
+    }
+
     public static EntityManager getEntityManager(){
         PersistenceProvider persistenceProvider = new HibernatePersistenceProvider();
 
@@ -71,6 +79,11 @@ public class IEDCS_Player {
     @Command
     public int add(int a, int b) {
         return a + b;
+    }
+
+    @Command
+    public String curuser(){
+        return getLogin();
     }
 
     @Command // exit
@@ -109,16 +122,22 @@ public class IEDCS_Player {
        String dir = catalog.get(0).getDirectory();
        //update local catalog
        local_catalog.add(ebook);
+       appendToFile(getLogin(),ebook);
 
        //request server to cipher and send ebook
-       String get = HTTPMethods.sendGet("http://localhost:8080/rest/hello/download/"+dir);
-
+//       String get = HTTPMethods.sendGet("http://localhost:8080/rest/hello/download/"+dir);
+       String local_directory = readFromFile("directory");
+       local_directory = local_directory.replaceAll("\\s","");
+        HTTPMethods.downloadFile("http://localhost:8080/rest/hello/download/"+dir,local_directory);
    }
 
    @Command // read Ebook
    public void read(String title) throws Exception{
       // String local_directory = "C:\\Users\\Andre\\Documents\\ebooks\\";
-       String local_directory = WorkingDirectories.getWorking_directory();
+       //String local_directory = WorkingDirectories.getWorking_directory();
+       String local_directory = readFromFile("directory");
+       local_directory = local_directory.replaceAll("\\s","");
+       System.out.println("directory read: "+local_directory);
 
        // get filename of selected ebook
        String SELECT_QUERY = "from CatalogEntity where title = :title";
@@ -170,8 +189,10 @@ public class IEDCS_Player {
         System.out.println("***********AVALIABLE CATALOG ON IEDCS SERVER***********");
         System.out.println("*******************************************************");
         for(CatalogEntity cat : catalog){
-                System.out.println(cat.getTitle());
-            }
+            System.out.print("********* ");
+            System.out.print(cat.getTitle());
+            System.out.println(" *********");
+        }
     }
 
     @Command //show downloaded books
@@ -179,8 +200,13 @@ public class IEDCS_Player {
         System.out.println("*******************************************************");
         System.out.println("******************** DOWNLOADED EBOOKS*****************");
         System.out.println("*******************************************************");
-        for(String str : local_catalog){
-            System.out.println(str);
+        String bought = readFromFile(getLogin());
+        String[] tmp = bought.split(" ");
+
+        for(String str : tmp){
+            System.out.print("********* ");
+            System.out.print(str);
+            System.out.println(" **********");
         }
     }
 
@@ -257,12 +283,15 @@ public class IEDCS_Player {
         HTTPMethods.sendPost("http://localhost:8080/rest/hello/register", json); //request register new user
         HTTPMethods.sendPost("http://localhost:8080/rest/hello/auth", cert_cc_str);
 
+        writeToFile(user_name,""); //initialize user's bought books
+
 
     }
 
     @Command    // configs work directory
     public void setdirectory(String dir) throws Exception{
         WorkingDirectories.setWorkDirectory(dir);
+        writeToFile("directory",dir);
     }
 
     public static String login() throws Exception{
@@ -326,7 +355,7 @@ public class IEDCS_Player {
         String res =HTTPMethods.sendPost("http://localhost:8080/rest/hello/login",pub_key_str);
         String status;
         if(res.equals("failed")) {
-            System.out.println("login failed!");
+            System.out.println("---");
             status = "-1";
         }
         else{
@@ -335,6 +364,7 @@ public class IEDCS_Player {
             String cert_cc_str = new String( Base64.getEncoder().encode(cert_byte));
             HTTPMethods.sendPost("http://localhost:8080/rest/hello/auth", cert_cc_str);
             status = res;
+
         }
 
         return status;
@@ -374,6 +404,56 @@ public class IEDCS_Player {
 
     }
 
+    public static void writeToFile(String file, String str){
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(file+".txt"), "utf-8"))) {
+            writer.write(str);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void appendToFile(String file, String str){
+
+        try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file+".txt", true)))) {
+            out.println(str);
+
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String readFromFile(String file){
+
+        BufferedReader br = null;
+        String out ="";
+
+        try {
+
+            String sCurrentLine;
+
+            br = new BufferedReader(new FileReader(file+".txt"));
+
+            while ((sCurrentLine = br.readLine()) != null) {
+              //  System.out.println(sCurrentLine);
+                out += sCurrentLine;
+                out += " ";
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (br != null)br.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+       // System.out.println("out: "+out);
+        return out;
+    }
+
 
 
     public static void main(String[] args) throws Exception{
@@ -384,12 +464,17 @@ public class IEDCS_Player {
         System.out.println("choose working directory");
         Scanner sc = new Scanner(System.in);
         String dir = sc.nextLine();
-        if(dir.equals("debug"))
+        if(dir.equals("debug")) {
             WorkingDirectories.setWorkDirectory("C:\\Users\\Andre\\Documents\\ebooks\\");
-        else
+            writeToFile("directory","C:\\Users\\Andre\\Documents\\ebooks\\");
+        }
+        else {
             WorkingDirectories.setWorkDirectory(dir);
+            writeToFile("directory",dir);
+        }
        // validate(); //checks if client's player key is registred on server's player key database
         logged = login();
+
         if(logged.equals("-1")) {
             System.out.println("login failed");
             System.out.println("register new user (y/n) ?");
@@ -412,7 +497,7 @@ public class IEDCS_Player {
         System.out.println("*******************************************************");
 
         IEDCS_Player player = new IEDCS_Player();
-
+        player.setLogin(logged);
         ShellFactory.createConsoleShell("IEDCS@"+logged, "", player)
                 .commandLoop();
         //int id = 1;

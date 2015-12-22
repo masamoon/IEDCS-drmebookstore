@@ -51,5 +51,8 @@
     <orderEntry type="library" name="org.apache.directory.studio:org.bouncycastle.bcprov.jdk15:140" level="project" />
     <orderEntry type="library" name="asg.cliche-110413" level="project" />
     <orderEntry type="library" name="org.bouncycastle:bcprov-jdk15:1.46" level="project" />
+    <orderEntry type="library" name="pteidlibj" level="project" />
+    <orderEntry type="library" name="com.google.code.gson:gson:2.2" level="project" />
+    <orderEntry type="module" module-name="encfs-java" />
   </component>
 </module>

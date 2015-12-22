@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/IEDCS-Jersey.iml" filepath="$PROJECT_DIR$/IEDCS-Jersey.iml" />
       <module fileurl="file://$PROJECT_DIR$/../IntelliJprojects/Securityp5g9/security2015-p3g9/Security.iml" filepath="$PROJECT_DIR$/../IntelliJprojects/Securityp5g9/security2015-p3g9/Security.iml" />
+      <module fileurl="file://$USER_HOME$/encfs-java/encfs-java.iml" filepath="$USER_HOME$/encfs-java/encfs-java.iml" />
     </modules>
   </component>
 </project>
