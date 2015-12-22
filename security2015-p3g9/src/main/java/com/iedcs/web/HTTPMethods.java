@@ -22,6 +22,7 @@ public class HTTPMethods {
 
        HTTPMethods http = new HTTPMethods();
 
+
         System.out.println("Testing 1 - Send Http GET request");
        // http.sendGet();
 
@@ -37,6 +38,8 @@ public class HTTPMethods {
 
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+       // HttpsURLConnection con =  (HttpsURLConnection) obj.openConnection();
+
 
         // optional default is GET
         con.setRequestMethod("GET");
@@ -65,7 +68,7 @@ public class HTTPMethods {
     }
 
     // HTTP POST request
-    public static void sendPost(String url, String urlParameters) throws Exception {
+    public static String sendPost(String url, String urlParameters) throws Exception {
         final String USER_AGENT = "Mozilla/5.0";
         //url = "https://selfsolve.apple.com/wcResults.do";
         URL obj = new URL(url);
@@ -103,7 +106,7 @@ public class HTTPMethods {
 
         //print result
         System.out.println(response.toString());
-
+        return response.toString();
     }
 
 

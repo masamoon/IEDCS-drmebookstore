@@ -8,7 +8,11 @@ import asg.cliche.ShellFactory;
 
 import java.io.*;
 
+import com.google.gson.Gson;
+import com.iedcs.CitizenCard.Cartao;
+import com.iedcs.CitizenCard.Citizen;
 import com.iedcs.persistence.CatalogEntity;
+import com.iedcs.persistence.UsercredEntity;
 import com.iedcs.security.*;
 import com.iedcs.web.HTTPMethods;
 /*import org.apache.http.HttpResponse;
@@ -17,6 +21,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;*/
 
 import org.hibernate.jpa.HibernatePersistenceProvider;
+import pteidlib.*;
 
 
 import javax.crypto.SecretKey;
@@ -24,8 +29,12 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.spi.PersistenceProvider;
+import java.net.URLEncoder;
 import java.security.KeyFactory;
 import java.security.PublicKey;
+import java.security.URIParameter;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 
@@ -36,12 +45,13 @@ public class IEDCS_Player {
     private EntityManagerFactory entityManagerFactory;
     private EntityManager entityManager;
     private List<String> local_catalog;
-
+    private String logged_user;
 
 
 
     public IEDCS_Player(){
         local_catalog = new ArrayList<String>();
+        logged_user = new String();
 
     }
 
@@ -101,7 +111,7 @@ public class IEDCS_Player {
        local_catalog.add(ebook);
 
        //request server to cipher and send ebook
-       String get = HTTPMethods.sendGet("http://localhost:8080/rest/hello/"+dir);
+       String get = HTTPMethods.sendGet("http://localhost:8080/rest/hello/download/"+dir);
 
    }
 
@@ -174,9 +184,160 @@ public class IEDCS_Player {
         }
     }
 
+     // register new user
+    public static void register() throws Exception{
+       // String resp = HTTPMethods.sendGet("http://localhost:8080/rest/hello/register"); //request register new user
+
+        int ret = 0;
+        Cartao cartao = new Cartao();
+        try
+        {
+            // test.TestCVC();
+
+            pteid.Init("");
+
+            //test.TestChangeAddress();
+
+            // Don't check the integrity of the ID, address and photo (!)
+            pteid.SetSODChecking(false);
+
+            int cardtype = pteid.GetCardType();
+            switch (cardtype)
+            {
+                case pteid.CARD_TYPE_IAS07:
+                    System.out.println("IAS 0.7 card\n");
+                    break;
+                case pteid.CARD_TYPE_IAS101:
+                    System.out.println("IAS 1.0.1 card\n");
+                    break;
+                case pteid.CARD_TYPE_ERR:
+                    System.out.println("Unable to get the card type\n");
+                    break;
+                default:
+                    System.out.println("Unknown card type\n");
+            }
+
+            // Read ID Data
+            PTEID_ID idData = pteid.GetID();
+
+            }
+        catch (PteidException ex)
+        {
+            ex.printStackTrace();
+            //System.out.println(ex.getMessage());
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            //System.out.println(ex.getMessage());
+        }
+
+        String cc_num = pteid.GetID().numBI;
+        PTEID_Certif[] certs =  pteid.GetCertificates();
+        PTEID_Certif citizen_cc = certs[0];
+        byte[] cert_byte = citizen_cc.certif;
+        CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+        InputStream in = new ByteArrayInputStream(cert_byte);
+        X509Certificate cert_citizencc = (X509Certificate)certFactory.generateCertificate(in);
+        PublicKey citizen_pub_key = cert_citizencc.getPublicKey();
+        String user_name = pteid.GetID().firstname+" "+pteid.GetID().name;
+
+        String pub_key_user = new String(Base64.getEncoder().encode(citizen_pub_key.getEncoded()));
+        Citizen citizen = new Citizen();
+        citizen.setId(cc_num);
+        citizen.setName(user_name);
+        citizen.setUser_key("sim");
+        citizen.setPass("debug2");
+        citizen.setPublic_key(pub_key_user);
+        Gson gson = new Gson();
+
+        String json = gson.toJson(citizen);
+
+        String cert_cc_str = new String( Base64.getEncoder().encode(cert_byte));
+        HTTPMethods.sendPost("http://localhost:8080/rest/hello/register", json); //request register new user
+        HTTPMethods.sendPost("http://localhost:8080/rest/hello/auth", cert_cc_str);
+
+
+    }
+
     @Command    // configs work directory
     public void setdirectory(String dir) throws Exception{
         WorkingDirectories.setWorkDirectory(dir);
+    }
+
+    public static String login() throws Exception{
+        int ret = 0;
+        Cartao cartao = new Cartao();
+        try
+        {
+            // test.TestCVC();
+
+            pteid.Init("");
+
+            //test.TestChangeAddress();
+
+            // Don't check the integrity of the ID, address and photo (!)
+            pteid.SetSODChecking(false);
+
+            int cardtype = pteid.GetCardType();
+            switch (cardtype)
+            {
+                case pteid.CARD_TYPE_IAS07:
+                    System.out.println("IAS 0.7 card\n");
+                    break;
+                case pteid.CARD_TYPE_IAS101:
+                    System.out.println("IAS 1.0.1 card\n");
+                    break;
+                case pteid.CARD_TYPE_ERR:
+                    System.out.println("Unable to get the card type\n");
+                    break;
+                default:
+                    System.out.println("Unknown card type\n");
+            }
+
+            // Read ID Data
+            PTEID_ID idData = pteid.GetID();
+
+        }
+        catch (PteidException ex)
+        {
+            ex.printStackTrace();
+            //System.out.println(ex.getMessage());
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            //System.out.println(ex.getMessage());
+        }
+
+        PTEID_Certif cert = pteid.GetCertificates()[0];
+        byte[] cert_byte = cert.certif;
+        CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+        InputStream in = new ByteArrayInputStream(cert_byte);
+        X509Certificate cert_citizencc = (X509Certificate)certFactory.generateCertificate(in);
+
+        PublicKey pub = cert_citizencc.getPublicKey();
+        byte[] pub_encoded = Base64.getEncoder().encode(pub.getEncoded());
+        String pub_key_str = new String(pub_encoded);
+
+
+
+
+        String res =HTTPMethods.sendPost("http://localhost:8080/rest/hello/login",pub_key_str);
+        String status;
+        if(res.equals("failed")) {
+            System.out.println("login failed!");
+            status = "-1";
+        }
+        else{
+            System.out.println("login succesful!");
+
+            String cert_cc_str = new String( Base64.getEncoder().encode(cert_byte));
+            HTTPMethods.sendPost("http://localhost:8080/rest/hello/auth", cert_cc_str);
+            status = res;
+        }
+
+        return status;
     }
 
    // @Command // validate client using asymmetric cryptography
@@ -218,19 +379,41 @@ public class IEDCS_Player {
     public static void main(String[] args) throws Exception{
         String player_serial = "banan"; //hardcoded player key
        // final String SELECT_QUERY = "from CatalogEntity  where id = :id" ;
+        String logged="";
 
         System.out.println("choose working directory");
         Scanner sc = new Scanner(System.in);
-        WorkingDirectories.setWorkDirectory(sc.nextLine());
-        validate(); //checks if client's player key is registred on server's player key database
+        String dir = sc.nextLine();
+        if(dir.equals("debug"))
+            WorkingDirectories.setWorkDirectory("C:\\Users\\Andre\\Documents\\ebooks\\");
+        else
+            WorkingDirectories.setWorkDirectory(dir);
+       // validate(); //checks if client's player key is registred on server's player key database
+        logged = login();
+        if(logged.equals("-1")) {
+            System.out.println("login failed");
+            System.out.println("register new user (y/n) ?");
+            String sel = sc.nextLine();
+            if(sel.equals("y")) {
+                register();
+                logged = login();
+            }
+            else {
+                System.out.println("exiting...");
+                System.exit(-1);
+            }
+        }
+        else{
+            validate();
 
+        }
         System.out.println("*******************************************************");
         System.out.println("***************WELCOME TO IEDCS PLAYER*****************");
         System.out.println("*******************************************************");
 
         IEDCS_Player player = new IEDCS_Player();
 
-        ShellFactory.createConsoleShell("IEDCS", "", player)
+        ShellFactory.createConsoleShell("IEDCS@"+logged, "", player)
                 .commandLoop();
         //int id = 1;
 

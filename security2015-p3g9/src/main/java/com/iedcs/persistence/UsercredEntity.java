@@ -12,6 +12,7 @@ public class UsercredEntity {
     private String passhash;
     private int id;
     private String userKey;
+    private String publicKey;
 
     @Basic
     @Column(name = "username")
@@ -75,5 +76,15 @@ public class UsercredEntity {
         result = 31 * result + id;
         result = 31 * result + (userKey != null ? userKey.hashCode() : 0);
         return result;
+    }
+
+    @Basic
+    @Column(name = "public_key")
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
     }
 }

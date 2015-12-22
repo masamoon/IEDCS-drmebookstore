@@ -13,6 +13,7 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 
 public class AESEncryptor {
@@ -23,8 +24,10 @@ public class AESEncryptor {
         KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         keyGen.init(256);  //using AES-256
        // SecretKey key = keyGen.generateKey();  //generating key
-        Cipher aesCipher = Cipher.getInstance("AES");  //getting cipher for AES
-        aesCipher.init(Cipher.ENCRYPT_MODE, key);  //initializing cipher for encryption with key
+      //  Cipher aesCipher = Cipher.getInstance("AES");  //getting cipher for AES
+          Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        byte [] iv = "1234567812345678".getBytes();
+        aesCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));  //initializing cipher for encryption with key
 
         //creating file output stream to write to file
         try(FileOutputStream fos = new FileOutputStream(fname+".aes")){
@@ -33,6 +36,7 @@ public class AESEncryptor {
          //   oos.writeObject(key);  //saving key to file for use during decryption
 
             //creating file input stream to read contents for encryption
+
             try(FileInputStream fis = new FileInputStream(fname)){
                 //creating cipher output stream to write encrypted contents
                 try(CipherOutputStream cos = new CipherOutputStream(fos, aesCipher)){
@@ -48,15 +52,16 @@ public class AESEncryptor {
 
     public void decrypt(String fname, SecretKey key)throws Exception{
        // SecretKey key =null;
-
+        byte [] iv = "1234567812345678".getBytes();
         //creating file input stream to read from file
         try(FileInputStream fis = new FileInputStream(fname)){
             //creating object input stream to read objects from file
             ObjectInputStream ois = new ObjectInputStream(fis);
           //  key = (SecretKey)ois.readObject();  //reading key used for encryption
 
-            Cipher aesCipher = Cipher.getInstance("AES");  //getting cipher for AES
-            aesCipher.init(Cipher.DECRYPT_MODE, key);  //initializing cipher for decryption with key
+           // Cipher aesCipher = Cipher.getInstance("AES");  //getting cipher for AES
+            Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            aesCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));  //initializing cipher for decryption with key
             //creating file output stream to write back original contents
             try(FileOutputStream fos = new FileOutputStream(fname+".dec")){
                 //creating cipher input stream to read encrypted contents
