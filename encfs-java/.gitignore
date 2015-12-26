@@ -1,0 +1,9 @@
+.classpath
+.project
+.settings
+eclipse_bin
+target
+.idea
+*.iml
+.vimrc
+cscope*
