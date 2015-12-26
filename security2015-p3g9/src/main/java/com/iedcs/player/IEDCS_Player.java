@@ -22,6 +22,9 @@ import org.apache.http.impl.client.DefaultHttpClient;*/
 
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import pteidlib.*;
+import sun.security.pkcs11.SunPKCS11;
+import sun.security.pkcs11.wrapper.CK_MECHANISM;
+import sun.security.pkcs11.wrapper.PKCS11Constants;
 
 
 import javax.crypto.SecretKey;
@@ -29,13 +32,13 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.spi.PersistenceProvider;
+import javax.security.auth.callback.CallbackHandler;
 import java.net.URLEncoder;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.URIParameter;
+import java.security.*;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.X509EncodedKeySpec;
+import java.text.Normalizer;
 import java.util.*;
 
 
@@ -71,18 +74,11 @@ public class IEDCS_Player {
         return entityManager;
     }
 
-    @Command
-    public String hello() {
-        return "Hello, World!";
-    }
 
-    @Command
-    public int add(int a, int b) {
-        return a + b;
-    }
 
-    @Command
-    public String curuser(){
+    @Command(description="displays current logged user's profile pic and username")
+    public String curuser()throws Exception{
+        ReadPic.showPic();
         return getLogin();
     }
 
@@ -91,58 +87,46 @@ public class IEDCS_Player {
         System.exit(0);
     }
 
-   /* @Command //init player
-    public void init() throws Exception{
-         device_key = DeviceKeyFactory.getDevice();
-
-    }*/
-
-    /*@Command //Buy ebook
-    public void buy (int id)throws Exception{
-        String url = "http://localhost:8080/encrypt/"+id;
-        HTTPMethods.sendGet(url);                           //send GET request to buy and cipher book
-    }*/
 
 
    @Command(description="Downloads Ebook , first parameter is ebook title according to the catalog") // Download Ebook
    public void download(String ebook) throws Exception{
-       PersistenceProvider persistenceProvider = new HibernatePersistenceProvider();
 
-       EntityManagerFactory entityManagerFactory = persistenceProvider.createEntityManagerFactory("NewPersistenceUnit", new HashMap());
-       EntityManager entityManager = entityManagerFactory.createEntityManager();
+       if(!signhash(getLogin())){
+           System.out.println("failed to authenticate user: failed to verify digital signature");
+           System.exit(1);
+       }
 
-       // get filename of selected ebook
-       String SELECT_QUERY = "from CatalogEntity where title = :title";
-       List<CatalogEntity> catalog = getEntityManager().createQuery(SELECT_QUERY, CatalogEntity.class).setParameter("title",ebook).getResultList();
-       SecretKey user_key = UserKeyFactory.getKey();
-       SecretKey device_key = DeviceKeyFactory.getDeviceKey();
-       SecretKey player_key = PlayerKeyFactory.getKey();
-       SecretKey file_key = FileKeyFactory.getKey();
+       String dir = HTTPMethods.sendPost("http://localhost:8080/rest/hello/fetchbook",ebook); //fetches filename of desired ebook
 
-       String dir = catalog.get(0).getDirectory();
+
+     //  String dir = catalog.get(0).getDirectory();
        //update local catalog
        local_catalog.add(ebook);
        appendToFile(getLogin(),ebook);
 
        //request server to cipher and send ebook
-//       String get = HTTPMethods.sendGet("http://localhost:8080/rest/hello/download/"+dir);
        String local_directory = readFromFile("directory");
        local_directory = local_directory.replaceAll("\\s","");
-        HTTPMethods.downloadFile("http://localhost:8080/rest/hello/download/"+dir,local_directory);
+        HTTPMethods.downloadFile("http://localhost:8080/rest/hello/download/"+dir+"/"+URLEncoder.encode(getLogin(), "UTF-8"),local_directory);
    }
 
-   @Command // read Ebook
+   @Command (description="reads Ebook , first parameter is ebook title according to the catalog")// read Ebook
    public void read(String title) throws Exception{
       // String local_directory = "C:\\Users\\Andre\\Documents\\ebooks\\";
        //String local_directory = WorkingDirectories.getWorking_directory();
+       if(!signhash(getLogin())){
+           System.out.println("failed to authenticate user: failed to verify digital signature");
+           System.exit(1);
+       }
+
        String local_directory = readFromFile("directory");
        local_directory = local_directory.replaceAll("\\s","");
-       System.out.println("directory read: "+local_directory);
+       System.out.println("reading book: "+title+"from: "+local_directory);
 
        // get filename of selected ebook
-       String SELECT_QUERY = "from CatalogEntity where title = :title";
-       List<CatalogEntity> catalog = getEntityManager().createQuery(SELECT_QUERY, CatalogEntity.class).setParameter("title",title).getResultList();
-       String ebook = catalog.get(0).getDirectory();
+
+       String ebook = HTTPMethods.sendPost("http://localhost:8080/rest/hello/fetchbook",title);
        File f = new File(local_directory+ebook+"h.aes");    // ciphered ebook with crypto header
        File fout = new File(local_directory+ebook+".aes");  // ciphered ebook without crypto header
        byte[] header = MakeHeader.readHeader_bytes(f);                                    // read header
@@ -153,21 +137,26 @@ public class IEDCS_Player {
        SecretKey first_key =  KeyWrapper.unwrap_playerKey(header);     // decipher with player key
 
        byte[] first_key_encoded = encoder.encode(first_key.getEncoded());
-       HTTPMethods.sendPost("http://localhost:8080/rest/hello/dec",new String( first_key_encoded));           //send header to recover key
+
+       Gson gson = new Gson();
+       String[] tosend = {getLogin(),new String(first_key_encoded)};
+       String tosend_json = gson.toJson(tosend);
+      // HTTPMethods.sendPost("http://localhost:8080/rest/hello/dec",new String( first_key_encoded));           //send header to recover key
+       HTTPMethods.sendPost("http://localhost:8080/rest/hello/dec",tosend_json);           //send header to recover key
        String resp = HTTPMethods.sendGet("http://localhost:8080/rest/hello/receive");   // get recovered key
 
        // byte[] key_bytes = resp.getBytes();
-       System.out.println("RESP");
-       System.out.println(resp);
+     //  System.out.println("RESP");
+     //  System.out.println(resp);
        Base64.Decoder decoder = Base64.getDecoder();        //get base64 decoder
        byte[] key_bytes = decoder.decode(resp);             // decode response from server decipher
-       System.out.println("USER KEY UNWRAP");
-       System.out.println(new String(key_bytes));
+     //  System.out.println("USER KEY UNWRAP");
+     //  System.out.println(new String(key_bytes));
        SecretKey fkey = KeyWrapper.unwrap_deviceKey(key_bytes);  //decipher with the final key : device key
 
        // SecretKey fkey = new SecretKeySpec(key_bytes,"AES");
-       System.out.println("RECOVERED KEY");
-       System.out.println(new String(fkey.getEncoded()));
+     //  System.out.println("RECOVERED KEY");
+     //  System.out.println(new String(fkey.getEncoded()));
        CipherEbook.decipher_file_1key(local_directory + ebook,fkey);
 
 
@@ -180,33 +169,35 @@ public class IEDCS_Player {
 
    }
 
-    @Command //show catalog
+    @Command (description="shows avaliable ebooks on the IEDCS catalog")//show catalog
     public void catalog() throws Exception{
-            final String SELECT_QUERY = "from CatalogEntity";
+           /* final String SELECT_QUERY = "from CatalogEntity";
             IEDCS_Player player = new IEDCS_Player();
-            List<CatalogEntity> catalog = player.getEntityManager().createQuery(SELECT_QUERY, CatalogEntity.class).getResultList();
+            List<CatalogEntity> catalog = player.getEntityManager().createQuery(SELECT_QUERY, CatalogEntity.class).getResultList();*/
+        String catalog_str = HTTPMethods.sendGet("http://localhost:8080/rest/hello/catalog");
+        Gson gson = new Gson();
+        CatalogEntity[] catalog = gson.fromJson(catalog_str, CatalogEntity[].class);
+
         System.out.println("*******************************************************");
         System.out.println("***********AVALIABLE CATALOG ON IEDCS SERVER***********");
         System.out.println("*******************************************************");
         for(CatalogEntity cat : catalog){
-            System.out.print("********* ");
-            System.out.print(cat.getTitle());
-            System.out.println(" *********");
+           System.out.printf("********* %-20s *********\n",cat.getTitle());
         }
     }
 
-    @Command //show downloaded books
+    @Command(description="shows current logged in user's downloaded ebooks")//show downloaded books
     public void show() throws Exception{
         System.out.println("*******************************************************");
         System.out.println("******************** DOWNLOADED EBOOKS*****************");
         System.out.println("*******************************************************");
+        stripDuplicatesFromFile(getLogin()+".txt");
         String bought = readFromFile(getLogin());
         String[] tmp = bought.split(" ");
 
         for(String str : tmp){
-            System.out.print("********* ");
-            System.out.print(str);
-            System.out.println(" **********");
+            System.out.printf("********* %-20s *********\n",str);
+
         }
     }
 
@@ -268,11 +259,22 @@ public class IEDCS_Player {
         PublicKey citizen_pub_key = cert_citizencc.getPublicKey();
         String user_name = pteid.GetID().firstname+" "+pteid.GetID().name;
 
+
+        user_name = Normalizer.normalize(user_name, Normalizer.Form.NFD);
+        String username_norm = user_name.replaceAll("[^\\x00-\\x7F]", "");
+
+        SecureRandom random = new SecureRandom();
+        byte bytes[] = new byte[32];
+        random.nextBytes(bytes);
+
+        String user_key = Base64.getEncoder().encodeToString(bytes);
+
         String pub_key_user = new String(Base64.getEncoder().encode(citizen_pub_key.getEncoded()));
         Citizen citizen = new Citizen();
         citizen.setId(cc_num);
-        citizen.setName(user_name);
-        citizen.setUser_key("sim");
+        citizen.setName(username_norm);
+        //citizen.setUser_key("sim");
+        citizen.setUser_key(user_key);
         citizen.setPass("debug2");
         citizen.setPublic_key(pub_key_user);
         Gson gson = new Gson();
@@ -288,14 +290,40 @@ public class IEDCS_Player {
 
     }
 
-    @Command    // configs work directory
+    @Command(description="changes active work directory")    // configs work directory
     public void setdirectory(String dir) throws Exception{
         WorkingDirectories.setWorkDirectory(dir);
         writeToFile("directory",dir);
     }
 
+
+    public static boolean signhash(String login) throws Exception{
+
+        byte[] out = sign(login);
+        byte[] tosend = Base64.getEncoder().encode(out);
+        System.out.println("verifying digital signature...");
+        Gson gson = new Gson();
+        String[] param = new String[2];
+        param[0]= login;
+        param[1]= new String(tosend);
+        String param_json = gson.toJson(param);
+       // System.out.println("sent json"+param_json);
+        String res = HTTPMethods.sendPost("http://localhost:8080/rest/hello/authprivate", param_json);
+       // System.out.println("res:"+res);
+        if(res.equals("true")) {
+            System.out.println("verified!");
+            return true;
+        }
+        else
+            return false;
+    }
+
+
+
+
     public static String login() throws Exception{
         int ret = 0;
+        System.out.println("logging in...");
         Cartao cartao = new Cartao();
         try
         {
@@ -359,7 +387,7 @@ public class IEDCS_Player {
             status = "-1";
         }
         else{
-            System.out.println("login succesful!");
+            System.out.println("login successful!");
 
             String cert_cc_str = new String( Base64.getEncoder().encode(cert_byte));
             HTTPMethods.sendPost("http://localhost:8080/rest/hello/auth", cert_cc_str);
@@ -376,7 +404,8 @@ public class IEDCS_Player {
         Base64.Decoder decoder = Base64.getDecoder();
         byte[] pk = decoder.decode(resp);
 
-        File fpk = new File("C:\\Users\\Andre\\Documents\\ebooks\\cpublickey.key"); // save public key on file
+        //File fpk = new File("C:\\Users\\Andre\\Documents\\ebooks\\cpublickey.key"); // save public key on file
+        File fpk = new File("cpublickey.key"); // save public key on file
        /* if(fpk.getParentFile() != null){
             fpk.mkdirs();
         }
@@ -387,7 +416,9 @@ public class IEDCS_Player {
         fout.close();
 
 
-        ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\Andre\\Documents\\ebooks\\cpublickey.key")); //retrieve pubic key object from file
+       // ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\Andre\\Documents\\ebooks\\cpublickey.key")); //retrieve pubic key object from file
+        ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("cpublickey.key")); //retrieve pubic key object from file
+
         PublicKey publicKey = (PublicKey) inputStream.readObject();
 
         Base64.Encoder encoder = Base64.getEncoder();
@@ -400,9 +431,69 @@ public class IEDCS_Player {
         byte[] token = EncryptionUtil.encrypt(new String(player_key_encoded),publicKey);
 
         byte[] encoded_token = encoder.encode(token);
-        HTTPMethods.sendPost("http://localhost:8080/rest/hello/validate",new String(encoded_token));
-
+        String res = HTTPMethods.sendPost("http://localhost:8080/rest/hello/validate",new String(encoded_token));
+        System.out.println(res);
     }
+
+    public static byte[] sign(String hash){
+        try {
+            String osName = System.getProperty("os.name");
+            String pkcs11config = "name=GemPC" + "\n"
+                    + "library=C:/WINDOWS/system32/pteidpkcs11.dll";
+
+            byte[] pkcs11configBytes = pkcs11config.getBytes();
+            ByteArrayInputStream configStream = new ByteArrayInputStream(pkcs11configBytes);
+
+            Provider p = new SunPKCS11(configStream);
+            Security.addProvider(p);
+            CallbackHandler cmdLineHdlr = new com.sun.security.auth.callback.TextCallbackHandler();
+            KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11", p,
+                    new KeyStore.CallbackHandlerProtection(cmdLineHdlr));
+            KeyStore ks = builder.getKeyStore();
+            String assinaturaCertifLabel = "CITIZEN AUTHENTICATION CERTIFICATE";
+           // Certificate[] chain = ks.getCertificateChain(assinaturaCertifLabel);
+            Key key = ks.getKey(assinaturaCertifLabel, null);
+           PublicKey pub_key = ks.getCertificate(assinaturaCertifLabel).getPublicKey();
+           // System.out.println("public key: "+ new String(pub_key.getEncoded()));
+
+
+            //
+           /* System.out.println(pteid.GetCertificates()[0].certifLabel);
+           byte[] cert_byte = pteid.GetCertificates()[0].certif;
+            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+            InputStream in = new ByteArrayInputStream(cert_byte);
+            X509Certificate cert_citizencc = (X509Certificate)certFactory.generateCertificate(in);
+            PublicKey citizen_pub_key = cert_citizencc.getPublicKey();*/
+            //
+
+            CK_MECHANISM mechanism = new CK_MECHANISM();
+            mechanism.mechanism = PKCS11Constants.CKM_RSA_PKCS;
+            mechanism.pParameter = null;
+
+
+
+            Signature sig = Signature.getInstance("SHA1withRSA",p);
+            sig.initSign((PrivateKey)key) ;
+            sig.update(hash.getBytes());
+            byte[] signedHash = sig.sign();
+
+           // System.out.println("to sign: "+hash);
+           // System.out.println("signed: "+ new String(signedHash));
+
+           /* Signature verifier = Signature.getInstance("SHA1withRSA");
+            verifier.initVerify(pub_key);
+            verifier.update(hash.getBytes());
+            boolean ok = verifier.verify(signedHash);
+            System.out.println("ok: "+ok);*/
+
+            return signedHash;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
 
     public static void writeToFile(String file, String str){
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
@@ -454,14 +545,31 @@ public class IEDCS_Player {
         return out;
     }
 
+    public void stripDuplicatesFromFile(String filename) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        Set<String> lines = new HashSet<String>(10000);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            lines.add(line);
+        }
+        reader.close();
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
+        for (String unique : lines) {
+            writer.write(unique);
+            writer.newLine();
+        }
+        writer.close();
+    }
+
 
 
     public static void main(String[] args) throws Exception{
         String player_serial = "banan"; //hardcoded player key
-       // final String SELECT_QUERY = "from CatalogEntity  where id = :id" ;
+
         String logged="";
 
         System.out.println("choose working directory");
+        System.out.print(">");
         Scanner sc = new Scanner(System.in);
         String dir = sc.nextLine();
         if(dir.equals("debug")) {
@@ -472,7 +580,7 @@ public class IEDCS_Player {
             WorkingDirectories.setWorkDirectory(dir);
             writeToFile("directory",dir);
         }
-       // validate(); //checks if client's player key is registred on server's player key database
+
         logged = login();
 
         if(logged.equals("-1")) {
@@ -482,6 +590,11 @@ public class IEDCS_Player {
             if(sel.equals("y")) {
                 register();
                 logged = login();
+                validate(); //checks if client's player key is registred on server's player key database
+                if(!signhash(logged)){
+                    System.out.println("failed to authenticate user: failed to verify digital signature");
+                    System.exit(1);
+                }
             }
             else {
                 System.out.println("exiting...");
@@ -489,7 +602,11 @@ public class IEDCS_Player {
             }
         }
         else{
-            validate();
+            validate();//checks if client's player key is registred on server's player key database
+            if(!signhash(logged)){
+                System.out.println("failed to authenticate user: failed to verify digital signature");
+                System.exit(1);
+            }
 
         }
         System.out.println("*******************************************************");
@@ -500,11 +617,7 @@ public class IEDCS_Player {
         player.setLogin(logged);
         ShellFactory.createConsoleShell("IEDCS@"+logged, "", player)
                 .commandLoop();
-        //int id = 1;
 
-
-      //  List<CatalogEntity> catalog = player.getEntityManager().createQuery(SELECT_QUERY, CatalogEntity.class).setParameter("id",id).getResultList();
-      //  System.out.println(catalog.get(0).getTitle());
 
 
         player.getEntityManager().close();

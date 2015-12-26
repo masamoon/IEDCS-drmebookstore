@@ -46,7 +46,7 @@ public class KeyWrapper {
         byte[] wrap_key = wrapKey_3(device_key,user_key,player_key,file_key);
        // SecretKey file_key_unwrapped = unwrapKey_3(device_key,user_key,player_key,wrap_key);
        SecretKey k1 =  unwrap_playerKey(wrap_key);
-        SecretKey k2 = unwrap_userKey(k1.getEncoded());
+        SecretKey k2 = unwrap_userKey(k1.getEncoded(),"ANDRE RIBEIRO LOPES");
         SecretKey k3 = unwrap_deviceKey(k2.getEncoded());
 
         System.out.println(new String(file_key.getEncoded()));
@@ -123,12 +123,12 @@ public class KeyWrapper {
 
     }
 
-    public static SecretKey unwrap_userKey(byte[] wrappedKey) throws  Exception{
+    public static SecretKey unwrap_userKey(byte[] wrappedKey, String username) throws  Exception{
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
         // unwrap the wrapped key
         Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding", "BC");
-        SecretKey user_key = UserKeyFactory.getKey();
+        SecretKey user_key = UserKeyFactory.getKeyUser(username);
         cipher.init(Cipher.DECRYPT_MODE, user_key );
         SecretKey key = new SecretKeySpec(cipher.doFinal(wrappedKey), "AES");
         //  System.out.println("unwrapped: " + new String(key.getEncoded()));

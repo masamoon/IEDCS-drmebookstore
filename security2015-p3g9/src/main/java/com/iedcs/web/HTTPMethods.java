@@ -45,8 +45,8 @@ public class HTTPMethods {
         con.setRequestProperty("User-Agent", USER_AGENT);
 
         int responseCode = con.getResponseCode();
-        System.out.println("\nSending 'GET' request to URL : " + url);
-        System.out.println("Response Code : " + responseCode);
+      //  System.out.println("\nSending 'GET' request to URL : " + url);
+       // System.out.println("Response Code : " + responseCode);
 
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));
@@ -59,7 +59,7 @@ public class HTTPMethods {
         in.close();
 
         //print result
-        System.out.println(response.toString());
+        //System.out.println(response.toString());
         return response.toString();
 
     }
@@ -87,9 +87,9 @@ public class HTTPMethods {
         wr.close();
 
         int responseCode = con.getResponseCode();
-        System.out.println("\nSending 'POST' request to URL : " + url);
-        System.out.println("Post parameters : " + urlParameters);
-        System.out.println("Response Code : " + responseCode);
+      //  System.out.println("\nSending 'POST' request to URL : " + url);
+      //  System.out.println("Post parameters : " + urlParameters);
+      //  System.out.println("Response Code : " + responseCode);
 
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));
@@ -102,7 +102,7 @@ public class HTTPMethods {
         in.close();
 
         //print result
-        System.out.println(response.toString());
+        //System.out.println(response.toString());
         return response.toString();
     }
 
@@ -132,9 +132,9 @@ public class HTTPMethods {
                         fileURL.length());
             }
 
-            System.out.println("Content-Type = " + contentType);
-            System.out.println("Content-Disposition = " + disposition);
-            System.out.println("Content-Length = " + contentLength);
+          //  System.out.println("Content-Type = " + contentType);
+          //  System.out.println("Content-Disposition = " + disposition);
+          //  System.out.println("Content-Length = " + contentLength);
             System.out.println("fileName = " + fileName);
 
             // opens input stream from the HTTP connection
