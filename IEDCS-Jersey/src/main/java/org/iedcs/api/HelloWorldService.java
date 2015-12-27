@@ -322,7 +322,7 @@ public class HelloWorldService {
         EncFSFile[] certificates = cert_dir.listFiles();
 
         X509Certificate cert_auth = null;
-        X509Certificate cert_cartao =null;
+        X509Certificate cert_cartao = null;
 
         for(EncFSFile f : certificates){
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -391,8 +391,17 @@ public class HelloWorldService {
         System.out.println(cert_root.getSubjectDN().getName());
         baos4.flush();
 
+        String pkcs11Config = "name = CartaoCidadao" + System.getProperty("line.separator") + "library = c:\\windows\\system32\\pteidpkcs11.dll";
 
-        String pkcs11Config = "name = CartaoCidadao"+System.getProperty("line.separator")+"library = c:\\windows\\system32\\pteidpkcs11.dll";
+        System.out.println("DETECTED OS:" + System.getProperty("os.name"));
+
+        if(System.getProperty("os.name").startsWith("Windows")) {
+            pkcs11Config = "name = CartaoCidadao" + System.getProperty("line.separator") + "library = c:\\windows\\system32\\pteidpkcs11.dll";
+        }
+        else {
+            pkcs11Config = "name = CartaoCidadao" + System.getProperty("line.separator") + "library = /usr/local/libpteidpkcs11.so";
+        }
+        ///usr/local/lib
         byte[] pkcs11configBytes = pkcs11Config.getBytes();
         ByteArrayInputStream configStream = new ByteArrayInputStream(pkcs11configBytes);
         final Provider pkcs11Provider = new sun.security.pkcs11.SunPKCS11(configStream);
@@ -401,16 +410,7 @@ public class HelloWorldService {
 
 
 
-       /* cert_citizencc.verify(cert_auth08.getPublicKey());
-        cert_auth08.verify(cert_cartao02.getPublicKey());
-        cert_cartao02.verify(cert_estado.getPublicKey());
-        cert_estado.verify(cert_root.getPublicKey());
-        cert_root.verify(cert_root.getPublicKey());
-        cert_citizencc.checkValidity();
-        cert_auth08.checkValidity();
-        cert_cartao02.checkValidity();
-        cert_estado.checkValidity();
-        cert_root.checkValidity();*/
+
 
         cert_citizencc.verify(cert_auth.getPublicKey());
         cert_auth.verify(cert_cartao.getPublicKey());
@@ -488,8 +488,15 @@ public class HelloWorldService {
         byte[] publicKeyBytes = Base64.getDecoder().decode(str_public_key);
 
         String osName = System.getProperty("os.name");
-        String pkcs11config = "name=GemPC" + "\n"
-                + "library=C:/WINDOWS/system32/pteidpkcs11.dll";
+
+        String pkcs11config = "name=CartaoCidadao" + "\n" + "library=C:/WINDOWS/system32/pteidpkcs11.dll";
+
+        if(osName.startsWith("Windows")) {
+            pkcs11config = "name=CartaoCidadao" + "\n" + "library=C:/WINDOWS/system32/pteidpkcs11.dll";
+        }
+        else{
+            pkcs11config = "name=CartaoCidadao" + "\n" + "library=/usr/local/libpteidpkcs11.so";
+        }
 
         byte[] pkcs11configBytes = pkcs11config.getBytes();
         ByteArrayInputStream configStream = new ByteArrayInputStream(pkcs11configBytes);
