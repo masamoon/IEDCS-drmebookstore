@@ -1,6 +1,6 @@
 aqui estão as bibliotecas .jar externas que não vieram do Maven assim como a configuração encfs obtida através do software EncFSMP e tabelas mySQL.
 
 Existem algumas rotas estáticas dentro do código que precisam de ser alteradas:
-no ficheiro HelloWorld existe uma variável denominada "encrypt_dir" que precisa de ser alterada para a directoria onde está o volume cifrado.
-também é necessário criar uma directoria "ebooks" dentro da pasta do servidor (neste caso tomcat), esta directoria é usada como directório temporário onde estão alguns ficheiros 
+no ficheiro HelloWorldService.java, dentro do projecto IEDCS-Jersey no package org.iedcs.api, existe uma variável denominada "encrypt_dir" que precisa de ser alterada para a directoria onde está o volume cifrado.
+também é necessário criar uma directoria "ebooks" dentro da pasta do servidor (neste caso no directório do tomcat), esta directoria é usada como directório temporário onde estão alguns ficheiros 
 retirados do volume cifrado.
