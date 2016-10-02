@@ -1,5 +1,4 @@
 # IEDCS-drmebookstore
-Ebook store using DRM
 
 Ebook store that uses DRM.
 
